@@ -1,0 +1,45 @@
+-- Esercizio 4 sulle query
+USE sakila;
+
+-- Elenca tutti i film rilasciati dopo il 2005, ordinati per titolo in ordine alfabetico
+SELECT * FROM film
+WHERE release_year > 2005
+ORDER BY title ASC;
+
+-- Mostra tutti i noleggi (rental) effettuati da un cliente di nome Mary Smith
+SELECT film.title, rental_date, return_date
+FROM rental
+JOIN inventory ON inventory.inventory_id = rental.inventory_id
+JOIN customer ON rental.customer_id = customer.customer_id
+JOIN film ON film.film_id = inventory.film_id
+WHERE customer.first_name = "Mary" AND customer.last_name = "Smith"
+ORDER BY return_date;
+
+
+-- Per ogni film, mostra il numero totale di volte in cui è stato noleggiato (usa JOIN e GROUP BY). 
+SELECT film.title, COUNT(rental_id)
+FROM rental
+JOIN inventory ON inventory.inventory_id = rental.inventory_id
+JOIN film ON film.film_id = inventory.film_id
+GROUP BY film.title
+ORDER BY COUNT(rental_id) DESC;
+
+-- Elenca i nomi dei film che non sono mai stati noleggiati. 
+SELECT film.title
+FROM inventory
+JOIN film ON film.film_id = inventory.film_id
+WHERE inventory_id <> ALL (
+  SELECT inventory_id
+  FROM rental
+  )
+GROUP BY film.title;
+
+-- Trova il genere (category) con il maggior numero di noleggi.
+SELECT category.name, COUNT(rental_id)
+FROM rental
+JOIN inventory ON inventory.inventory_id = rental.inventory_id
+JOIN film ON film.film_id = inventory.film_id
+JOIN film_category ON film_category.film_id = film.film_id
+JOIN category ON film_category.category_id = category.category_id
+GROUP BY category.name
+ORDER BY COUNT(rental_id) DESC;
